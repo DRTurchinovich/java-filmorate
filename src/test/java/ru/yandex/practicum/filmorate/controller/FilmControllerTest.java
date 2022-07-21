@@ -2,10 +2,13 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import ru.yandex.practicum.filmorate.dao.InMemoryFilmStorage;
+
 
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,11 +17,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = FilmController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class FilmControllerTest {
+    private final MockMvc mockMvc;
+    private final InMemoryFilmStorage filmStorage;
 
     @Autowired
-    MockMvc mockMvc;
+    public FilmControllerTest(
+            MockMvc mockMvc, InMemoryFilmStorage filmStorage) {
+        this.mockMvc = mockMvc;
+        this.filmStorage = filmStorage;
+    }
 
     @Test
     void createFilm() throws Exception {
@@ -110,7 +120,7 @@ class FilmControllerTest {
                                 "  \"releaseDate\": \"1967-03-25\",\n" +
                                 "  \"duration\": \n" +
                                 "}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -165,9 +175,9 @@ class FilmControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         String result = mvcResult.getResponse().getContentAsString();
-        String film = "[{\"id\":2,\"name\":\"nisi eiusmod\",\"description\":\"adipisicing\",\"releaseDate\":\"1967-03-25\",\"duration\":100}," +
-                "{\"id\":1,\"name\":\"Film Updated\",\"description\":\"New film update decription\",\"releaseDate\":\"1989-04-17\",\"duration\":190}," +
-                "{\"id\":3,\"name\":\"nisi eiusmod\",\"description\":\"adipisicing\",\"releaseDate\":\"1967-03-25\",\"duration\":100}]";
+        String film = "[{\"id\":1,\"name\":\"Film Updated\",\"description\":\"New film update decription\",\"releaseDate\":\"1989-04-17\",\"duration\":190}," +
+                "{\"id\":3,\"name\":\"nisi eiusmod\",\"description\":\"adipisicing\",\"releaseDate\":\"1967-03-25\",\"duration\":100}," +
+                "{\"id\":2,\"name\":\"nisi eiusmod\",\"description\":\"adipisicing\",\"releaseDate\":\"1967-03-25\",\"duration\":100}]";
         assertEquals(film, result);
         assertNotNull(result);
 }
